@@ -1,0 +1,4 @@
+#!/bin/sh
+/bin/syslogd
+/bin/mount -a
+/bin/udhcpc

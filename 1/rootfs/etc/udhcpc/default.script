@@ -1,0 +1,34 @@
+#!/bin/sh
+case "$1" in
+  deconfig)
+    ip addr flush dev $interface
+    ;;
+
+  renew|bound)
+    # flush all the routes
+    if [ -n "$router" ]; then
+      ip route del default 2> /dev/null
+    fi
+
+    # check broadcast
+    if [ -n "$broadcast" ]; then
+      broadcast="broadcast $broadcast"
+    fi
+
+    # add a new ip address
+    ip addr add $ip/$mask $broadcast dev $interface
+
+    if [ -n "$router" ]; then
+      ip route add default via $router dev $interface
+    fi
+
+    [ -n "$domain" ] && echo search $domain > /etc/resolv.conf
+    for i in $dns ; do
+      grep "nameserver $i" /etc/resolv.conf > /dev/null 2>&1
+      if [ $? -ne 0 ]; then
+        echo nameserver $i >> /etc/resolv.conf
+      fi
+    done
+    ;;
+esac
+exit 0
